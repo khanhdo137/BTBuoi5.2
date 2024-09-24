@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet, ImageBackground } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, TouchableOpacity, Alert, StyleSheet, Text } from 'react-native';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 
 const ChangePasswordScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
+
+    useEffect(() => {
+        navigation.setOptions({ title: 'Quên mật khẩu' });
+    }, [navigation]);
 
     const handleChangePassword = async () => {
         const auth = getAuth();
@@ -17,44 +21,68 @@ const ChangePasswordScreen = ({ navigation }) => {
     };
 
     return (
-        <ImageBackground 
-            source={require('../assets/images/2.jpg')}
-            style={styles.background}
-            resizeMode="cover"
-        >
-            <View style={styles.container}>
-                <TextInput
-                    placeholder="Nhập email để đổi mật khẩu"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    style={styles.input}
-                />
-                <Button title="Gửi email đổi mật khẩu" onPress={handleChangePassword} color="#007BFF" />
-            </View>
-        </ImageBackground>
+        <View style={styles.container}>
+            <Text style={styles.header}>Quên mật khẩu</Text>
+            <TextInput
+                placeholder="Nhập email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                style={styles.input}
+                placeholderTextColor="#888"
+            />
+            <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
+                <Text style={styles.buttonText}>Lấy lại mật khẩu</Text>
+            </TouchableOpacity>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
-    background: {
+    container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        paddingHorizontal: 30,
+        backgroundColor: '#f5f5f5',
     },
-    container: {
-        width: '90%', 
-        padding: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)', 
-        borderRadius: 10,
-        elevation: 5,
+    header: {
+        fontSize: 26,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        color: '#333',
     },
     input: {
-        marginBottom: 12,
-        borderBottomWidth: 1,
+        width: '100%',
+        padding: 15,
+        borderWidth: 1,
         borderColor: '#ccc',
-        padding: 8,
+        borderRadius: 10,
+        marginBottom: 20,
         fontSize: 16,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
+    },
+    button: {
+        backgroundColor: '#007BFF',
+        paddingVertical: 15,
+        borderRadius: 10,
+        width: '100%',
+        alignItems: 'center',
+        shadowColor: '#007BFF',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+        elevation: 5,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '600',
     },
 });
 

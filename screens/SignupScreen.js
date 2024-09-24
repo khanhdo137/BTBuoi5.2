@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Alert, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, Alert, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { auth, firestore } from '../firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -9,6 +9,10 @@ const SignupScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({ title: 'Đăng Ký' });
+  }, [navigation]);
 
   const handleSignup = async () => {
     if (!email || !password) {
@@ -22,8 +26,8 @@ const SignupScreen = () => {
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert('Thông báo', 'Mật khẩu phải có ít nhất 6 ký tự.');
+    if (password.length < 8) {
+      Alert.alert('Thông báo', 'Mật khẩu phải có ít nhất 8 ký tự.');
       return;
     }
 
@@ -31,13 +35,15 @@ const SignupScreen = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      await sendEmailVerification(user);
+      
       await setDoc(doc(firestore, 'users', user.uid), {
         email: user.email,
         createdAt: serverTimestamp(),
       });
 
       Alert.alert('Đăng ký thành công!', 'Thông tin người dùng đã được lưu.');
-      navigation.navigate('Login'); 
+      navigation.navigate('Login');
     } catch (error) {
       let message;
 
@@ -52,80 +58,96 @@ const SignupScreen = () => {
   };
 
   return (
-    <ImageBackground 
-      source={require('../assets/images/2.jpg')} 
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <View style={styles.container}>
-        <Text style={styles.header}>Đăng Ký</Text>
-        <TextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Mật khẩu"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-        />
-        <Button title="Đăng ký" onPress={handleSignup} color="#007BFF" />
+    <View style={styles.container}>
+      <Text style={styles.header}>Đăng Ký</Text>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Đã có tài khoản? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.linkText}>Đăng nhập</Text>
-          </TouchableOpacity>
-        </View>
+      <TextInput
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        style={styles.input}
+        placeholderTextColor="#888"
+      />
+      <TextInput
+        placeholder="Mật khẩu"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        style={styles.input}
+        placeholderTextColor="#888"
+      />
+
+      <TouchableOpacity style={styles.button} onPress={handleSignup}>
+        <Text style={styles.buttonText}>Đăng ký</Text>
+      </TouchableOpacity>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Đã có tài khoản? </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.linkText}>Đăng nhập</Text>
+        </TouchableOpacity>
       </View>
-    </ImageBackground>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  background: {
+  container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  container: {
-    width: '90%', 
-    padding: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)', 
-    borderRadius: 10,
-    elevation: 5,
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
   },
   header: {
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
+    color: '#333',
   },
   input: {
-    marginBottom: 12,
-    borderBottomWidth: 1,
+    marginBottom: 15,
+    borderWidth: 1,
     borderColor: '#ccc',
-    padding: 10,
+    padding: 12,
     fontSize: 16,
-    borderRadius: 5,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    width: '100%',
+  },
+  button: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20,
+    width: '100%',
+    shadowColor: '#007BFF',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 10,
   },
   footerText: {
-    color: '#000',
     fontSize: 16,
+    color: '#333',
   },
   linkText: {
-    color: '#007BFF',
-    fontWeight: 'bold',
     fontSize: 16,
+    color: '#007BFF',
+    fontWeight: '600',
   },
 });
 
